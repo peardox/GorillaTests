@@ -79,7 +79,7 @@ var
 const
   // The type of model to load on startup
   // Valid options are dae, fbx, glb, gltf, obj, ply, stl and usdc
-  DefaultLoadType: String = 'usdc';
+  DefaultLoadType: String = 'glb';
 
 implementation
 
@@ -103,6 +103,9 @@ begin
             (Abs(A.Z - B.Z) > Epsilon);
 end;
 
+// Triggered by a RadioButton in the Model Rotation group
+// Setting the value has the side-effect of
+// chahging the Model's Orientation property
 procedure TForm1.ChangeModelRotation(const which: Integer);
 var
   old: TPoint3D;
@@ -124,6 +127,9 @@ begin
   end;
 end;
 
+// Triggered by a RadioButton in the CameraUp group
+// Setting the value has the side-effect of
+// chahging the Camera's WorldUp property
 procedure TForm1.ChangeCameraUp(const which: Integer);
 begin
   case which of
@@ -136,6 +142,9 @@ begin
   end;
 end;
 
+// Triggered by a RadioButton in the LookAt group
+// Setting the value has the side-effect of
+// chahging the Camera's LookAt property
 procedure TForm1.ChangeLookAt(const which: Integer);
 begin
   case which of
@@ -148,6 +157,8 @@ begin
   end;
 end;
 
+// Wrote this lot owing to frustration with Delphi crashing after I'd
+// used the IDE to lay it out and it hung on me near the end.
 procedure TForm1.CreateUIBoxes;
 var
   HeadLabel: TLabel;
@@ -288,12 +299,14 @@ begin
 
 end;
 
+// Action a CameraUp property change
 procedure TForm1.DoCameraUp;
 begin
   if Assigned(GorillaCamera) then
     GorillaCamera.WorldUp := FCameraUp;
 end;
 
+// Action a LookAt property change
 procedure TForm1.DoLookAt;
 begin
   if Assigned(GorillaCamera) then
@@ -303,6 +316,7 @@ begin
     end;
 end;
 
+// Action a ModelRotation property change
 procedure TForm1.DoModelRotation;
 begin
   if Assigned(GorillaModel) then
@@ -314,6 +328,11 @@ begin
     end;
 end;
 
+// All RadioButtons use this as their onChange event.
+// The RadioButtons have their Tag proerty set to
+// incrementing values from 0 to 23
+// This Tag is then passed on to the Change procedure
+// for the various groups
 procedure TForm1.DoRadioChange(Sender: TObject);
 var
   which: Integer;
@@ -331,6 +350,7 @@ begin
     end;
 end;
 
+// Initialise a load of stuff
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   CreateUIBoxes;
@@ -353,26 +373,34 @@ begin
 
 end;
 
+// On startup load a default Model as specified by DefaultLoadType
+// The directory layout of models/Orientation follows this pattern
+// to allow easy addition of new Model types
 procedure TForm1.FormShow(Sender: TObject);
 begin
   SwitchModel(ModelDir + 'models/Orientation/' + DefaultLoadType + '/Orientation.' + DefaultLoadType);
 end;
 
+// Getter for CameraUp
 function TForm1.GetCameraUp: TPoint3D;
 begin
   Result := FCameraUp;
 end;
 
+// Getter for ModelRotation
 function TForm1.GetModelRotation: TPoint3D;
 begin
   Result := FModelRotation;
 end;
 
+// Getter for LookAt
 function TForm1.GetLookAt: TPoint3D;
 begin
   Result := FLookAt;
 end;
 
+// Menu Handlers * 8
+// Very boring, just switch to model of the correct Model type
 procedure TForm1.ModelTypeDAEMenuClick(Sender: TObject);
 begin
   SwitchModel(ModelDir + 'models/Orientation/dae/Orientation.dae');
@@ -413,6 +441,7 @@ begin
   SwitchModel(ModelDir + 'models/Orientation/usdc/Orientation.usdc');
 end;
 
+// Setter for CameraUp also actions it
 procedure TForm1.SetCameraUp(const V: TPoint3D);
 begin
   if Point3DDiffers(FCameraUp, V) then
@@ -422,6 +451,7 @@ begin
     end;
 end;
 
+// Setter for ModelRotation also actions it
 procedure TForm1.SetModelRotation(const V: TPoint3D);
 begin
   if Point3DDiffers(FModelRotation, V) then
@@ -431,6 +461,7 @@ begin
     end;
 end;
 
+// Setter for LookAt also actions it
 procedure TForm1.SetLookAt(const V: TPoint3D);
 begin
   if Point3DDiffers(FLookAt, V) then
@@ -440,6 +471,8 @@ begin
     end;
 end;
 
+// Load a Model Clearing any old model first (so it Switches them)
+// GorillaModel will be Nil on first call but set on subsequent calls
 procedure TForm1.SwitchModel(const AModel: String);
 var
   BBox: TBoundingBox;
@@ -450,6 +483,7 @@ begin
       Exit;
     end;
 
+// Use this before typing Clear
 //  if GorillaModel <> Nil then
 //    FreeAndNil(GorillaModel);
 
@@ -468,6 +502,7 @@ begin
     GorillaModel.Position.Point := Point3D(BBox.TopLeftNear.X + (BBox.Width / 2),
                                             BBox.TopLeftNear.Y + (BBox.Height / 2),
                                             BBox.TopLeftNear.Z + (BBox.Depth / 2));
+// Old Test values
 { Test Values
     CameraUp := Point3D(0, 1, 0);
     ModelRotation := Point3D(90, 0, 0);
