@@ -1,0 +1,488 @@
+unit OrientationMain;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Types3D,
+  System.Math.Vectors, Gorilla.Control, Gorilla.Transform, Gorilla.Mesh,
+  Gorilla.Model, FMX.Controls3D, Gorilla.Light, PolarViewport, FMX.Layouts,
+  FMX.Controls.Presentation, FMX.StdCtrls, FMX.Objects3D,
+  FMX.TabControl, PolarCamera, FMX.Menus;
+
+type
+
+  TForm1 = class(TForm)
+    Layout2: TLayout;
+    Layout5: TLayout;
+    Layout6: TLayout;
+    MainMenu1: TMainMenu;
+    OptionsMenu: TMenuItem;
+    ModelTypeMenu: TMenuItem;
+    DisplayMenu: TMenuItem;
+    ModelTypeGLBMenu: TMenuItem;
+    ModelTypeFBXMenu: TMenuItem;
+    ModelTypeDAEMenu: TMenuItem;
+    ModelTypeGLTFMenu: TMenuItem;
+    ModelTypeOBJMenu: TMenuItem;
+    ModelTypePLYMenu: TMenuItem;
+    ModelTypeSTLMenu: TMenuItem;
+    ModelTypeUSDMenu: TMenuItem;
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure ModelTypeDAEMenuClick(Sender: TObject);
+    procedure ModelTypeFBXMenuClick(Sender: TObject);
+    procedure ModelTypeGLBMenuClick(Sender: TObject);
+    procedure ModelTypeGLTFMenuClick(Sender: TObject);
+    procedure ModelTypeOBJMenuClick(Sender: TObject);
+    procedure ModelTypePLYMenuClick(Sender: TObject);
+    procedure ModelTypeSTLMenuClick(Sender: TObject);
+    procedure ModelTypeUSDMenuClick(Sender: TObject);
+  private
+    { Private declarations }
+    FGroupBoxes: array of TGroupBox;
+    FRadioButtons: array of TRadioButton;
+    GorillaViewport: TPolarViewport;
+    GorillaLight: TGorillaLight;
+    GorillaModel: TGorillaModel;
+    GorillaCamera: TPolarCamera;
+    ModelDir: String;
+    ModelPath: String;
+    FLookAt: TPoint3D;
+    FModelRotation: TPoint3D;
+    FCameraUp: TPoint3D;
+    procedure DoRadioChange(Sender: TObject);
+    procedure SwitchModel(const AModel: String = '');
+    procedure CreateUIBoxes;
+    function GetModelRotation: TPoint3D;
+    function GetLookAt: TPoint3D;
+    function GetCameraUp: TPoint3D;
+    procedure SetModelRotation(const V: TPoint3D);
+    procedure SetLookAt(const V: TPoint3D);
+    procedure SetCameraUp(const V: TPoint3D);
+    procedure ChangeCameraUp(const which: Integer);
+    procedure ChangeModelRotation(const which: Integer);
+    procedure ChangeLookAt(const which: Integer);
+    procedure DoCameraUp;
+    procedure DoLookAt;
+    procedure DoModelRotation;
+  public
+    { Public declarations }
+    property LookAt: TPoint3D read GetLookAt write SetLookAt;
+    property ModelRotation: TPoint3D read GetModelRotation write SetModelRotation;
+    property CameraUp: TPoint3D read GetCameraUp write SetCameraUp;
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+uses Gorilla.DefTypes, System.Math,
+  Gorilla.GLB.Loader,
+  Gorilla.GLTF.Loader,
+  Gorilla.OBJ.Loader,
+  Gorilla.USD.Loader,
+  Gorilla.FBX.Loader,
+  Gorilla.DAE.Loader,
+  Gorilla.STL.Loader,
+  Gorilla.PLY.Loader
+  ;
+
+{$R *.fmx}
+
+function Point3DDiffers(const A, B: TPoint3D; Epsilon: Single = 1E-6): Boolean;
+begin
+  Result := (Abs(A.X - B.X) > Epsilon) or
+            (Abs(A.Y - B.Y) > Epsilon) or
+            (Abs(A.Z - B.Z) > Epsilon);
+end;
+
+procedure TForm1.ChangeModelRotation(const which: Integer);
+var
+  old: TPoint3D;
+begin
+  old := FModelRotation;
+  case which of
+    0: ModelRotation := Point3D(  0, old.Y, old.Z);
+    1: ModelRotation := Point3D( 90, old.Y, old.Z);
+    2: ModelRotation := Point3D(180, old.Y, old.Z);
+    3: ModelRotation := Point3D(270, old.Y, old.Z);
+    4: ModelRotation := Point3D(old.X,  0, old.Z);
+    5: ModelRotation := Point3D(old.X, 90, old.Z);
+    6: ModelRotation := Point3D(old.X,180, old.Z);
+    7: ModelRotation := Point3D(old.X,270, old.Z);
+    8: ModelRotation := Point3D(old.X, old.Y,  0);
+    9: ModelRotation := Point3D(old.X, old.Y, 90);
+    10: ModelRotation := Point3D(old.X, old.Y,180);
+    11: ModelRotation := Point3D(old.X, old.Y,270);
+  end;
+end;
+
+procedure TForm1.ChangeCameraUp(const which: Integer);
+begin
+  case which of
+    12: CameraUp := Point3D( 1, 0, 0);
+    13: CameraUp := Point3D( 0, 1, 0);
+    14: CameraUp := Point3D( 0 , 0, 1);
+    15: CameraUp := Point3D(-1, 0, 0);
+    16: CameraUp := Point3D( 0,-1, 0);
+    17: CameraUp := Point3D( 0 , 0,-1);
+  end;
+end;
+
+procedure TForm1.ChangeLookAt(const which: Integer);
+begin
+  case which of
+    18: LookAt := Point3D( 50,  0,  0);
+    19: LookAt := Point3D(  0, 50,  0);
+    20: LookAt := Point3D(  0,  0, 50);
+    21: LookAt := Point3D(-50,  0,  0);
+    22: LookAt := Point3D(  0,-50,  0);
+    23: LookAt := Point3D(  0,  0,-50);
+  end;
+end;
+
+procedure TForm1.CreateUIBoxes;
+var
+  HeadLabel: TLabel;
+  Panel: TPanel;
+  GroupBox: TGroupBox;
+  RadioButton: TRadioButton;
+  I, P, Index: Integer;
+const
+  PanelYOffset: Integer = 102;
+  Cap: Array[0..2] of String = ('X', 'Y', 'Z');
+  Ups: Array[0..5] of String = ('Up is +X', 'Up is +Y', 'Up is +Z','Up is -X', 'Up is -Y', 'Up is -Z');
+  Looks: Array[0..5] of String = ('Look Along +X', 'Look Along +Y', 'Look Along +Z','Look Along -X', 'Look Along -Y', 'Look Along -Z');
+begin
+  SetLength(FGroupBoxes, 5);
+  SetLength(FRadioButtons, (3 * 4) + 6 + 6);
+
+  HeadLabel := TLabel.Create(Layout6);
+  HeadLabel.Parent := Layout6;
+  HeadLabel.Position.X := 8;
+  HeadLabel.Position.Y := 0;
+  HeadLabel.Width := 160;
+  HeadLabel.Text := 'Model Rotation';
+  HeadLabel.TextSettings.HorzAlign := TTextAlign.Center;
+
+  for P := 0 to 2 do
+    begin
+      Panel := TPanel.Create(Layout6);
+      Panel.Parent := Layout6;
+      Panel.Position.X := 4;
+      Panel.Position.Y := 24 + (P * PanelYOffset);
+      Panel.Width := 150;
+      Panel.Height := 90;
+      GroupBox := TGroupBox.Create(Panel);
+      GroupBox.Parent := Panel;
+      GroupBox.Text := 'Rotation in ' + Cap[P];
+      GroupBox.Position.X := 8;
+      GroupBox.Position.Y := 0;
+      GroupBox.Width := Panel.Width - 4;
+      GroupBox.Height := Panel.Height - 4;
+      for I := 0 to 3 do
+        begin
+          RadioButton := TRadioButton.Create(GroupBox);
+          RadioButton.Parent := GroupBox;
+          RadioButton.Text := IntToStr(I * 90) + ' Degrees';
+          RadioButton.Position.X := 8;
+          RadioButton.Position.Y := 16 + (I * 16);
+          RadioButton.GroupName := 'RotationGroup' + IntToStr(P);
+          Index := I + (P * 4);
+          RadioButton.Tag := Index;
+          FRadioButtons[Index] := RadioButton;
+          FRadioButtons[Index].OnChange := DoRadioChange;
+          if((I = 1) and (P = 0)) then // Set RotX Default
+            FRadioButtons[Index].IsChecked := True
+          else if((I = 0) and (P = 1)) then // Set RotY Default
+            FRadioButtons[Index].IsChecked := True
+          else if((I = 0) and (P = 2)) then // Set RotZ Default
+            FRadioButtons[Index].IsChecked := True;
+        end;
+        FGroupBoxes[P] := GroupBox;
+    end;
+
+  HeadLabel := TLabel.Create(Layout6);
+  HeadLabel.Parent := Layout6;
+  HeadLabel.Position.X := 8;
+  HeadLabel.Position.Y := 16 + (3*PanelYOffset);
+  HeadLabel.Width := 160;
+  HeadLabel.Text := 'World Up';
+  HeadLabel.TextSettings.HorzAlign := TTextAlign.Center;
+
+  Panel := TPanel.Create(Layout6);
+  Panel.Parent := Layout6;
+  Panel.Position.X := 4;
+  Panel.Position.Y := 16 + 8 + 16 + (3*PanelYOffset);
+  Panel.Width := 150;
+  Panel.Height := 130;
+  GroupBox := TGroupBox.Create(Panel);
+  GroupBox.Parent := Panel;
+  GroupBox.Text := 'Camera Up';
+  GroupBox.Position.X := 8;
+  GroupBox.Position.Y := 8;
+  GroupBox.Width := Panel.Width - 4;
+  GroupBox.Height := Panel.Height - 4;
+  for I := 0 to 5 do
+    begin
+      RadioButton := TRadioButton.Create(GroupBox);
+      RadioButton.Parent := GroupBox;
+      RadioButton.Text := Ups[I];
+      RadioButton.Position.X := 8;
+      RadioButton.Position.Y := 16 + (I * 16);
+      RadioButton.GroupName := 'UpGroup';
+      Index := I + 12;
+      RadioButton.Tag := Index;
+      FRadioButtons[Index] := RadioButton;
+      FRadioButtons[Index].OnChange := DoRadioChange;
+      if(I = 1) then // Set UpY+ Default
+        FRadioButtons[Index].IsChecked := True;
+    end;
+  FGroupBoxes[3] := GroupBox;
+
+  HeadLabel := TLabel.Create(Layout6);
+  HeadLabel.Parent := Layout6;
+  HeadLabel.Position.X := 8;
+  HeadLabel.Position.Y := 16 + 160 + (3*PanelYOffset);
+  HeadLabel.Width := 160;
+  HeadLabel.Text := 'Look At';
+  HeadLabel.TextSettings.HorzAlign := TTextAlign.Center;
+
+  Panel := TPanel.Create(Layout6);
+  Panel.Parent := Layout6;
+  Panel.Position.X := 4;
+  Panel.Position.Y := 16 + 8 + 160 + 16 + (3*PanelYOffset);
+  Panel.Width := 150;
+  Panel.Height := 130;
+  GroupBox := TGroupBox.Create(Panel);
+  GroupBox.Parent := Panel;
+  GroupBox.Text := 'Look At';
+  GroupBox.Position.X := 8;
+  GroupBox.Position.Y := 8;
+  GroupBox.Width := Panel.Width - 4;
+  GroupBox.Height := Panel.Height - 4;
+  for I := 0 to 5 do
+    begin
+      RadioButton := TRadioButton.Create(GroupBox);
+      RadioButton.Parent := GroupBox;
+      RadioButton.Text := Looks[I];
+      RadioButton.Position.X := 8;
+      RadioButton.Position.Y := 16 + (I * 16);
+      RadioButton.GroupName := 'LookGroup';
+      Index := I + 18;
+      RadioButton.Tag := Index;
+      FRadioButtons[Index] := RadioButton;
+      FRadioButtons[Index].OnChange := DoRadioChange;
+      if(I = 0) then // Set Look Default
+        FRadioButtons[Index].IsChecked := True;
+    end;
+  FGroupBoxes[4] := GroupBox;
+
+
+end;
+
+procedure TForm1.DoCameraUp;
+begin
+  if Assigned(GorillaCamera) then
+    GorillaCamera.WorldUp := FCameraUp;
+end;
+
+procedure TForm1.DoLookAt;
+begin
+  if Assigned(GorillaCamera) then
+    begin
+      GorillaCamera.ResetRotationAngle;
+      GorillaCamera.PointCameraAt(Point3D(0, 0, 0), FLookAt);
+    end;
+end;
+
+procedure TForm1.DoModelRotation;
+begin
+  if Assigned(GorillaModel) then
+    begin
+      GorillaModel.ResetRotationAngle;
+      GorillaModel.RotationAngle.X := FModelRotation.X;
+      GorillaModel.RotationAngle.Y := FModelRotation.Y;
+      GorillaModel.RotationAngle.Z := FModelRotation.Z;
+    end;
+end;
+
+procedure TForm1.DoRadioChange(Sender: TObject);
+var
+  which: Integer;
+begin
+  if Sender is TRadioButton then
+    begin
+      which := TRadioButton(Sender).Tag;
+
+      if((which >= 0) and (which <= 11)) then
+        ChangeModelRotation(which)
+      else if((which >= 12) and (which <= 17)) then
+        ChangeCameraUp(which)
+      else if((which >= 18) and (which <= 23)) then
+        ChangeLookAt(which);
+    end;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  CreateUIBoxes;
+  if not DirectoryExists('models') then
+    ModelDir := '../../../';
+  ModelPath := ExpandFileName(ExtractFilePath(ParamStr(0)) + ModelDir);
+  GorillaViewport := TPolarViewport.Create(Layout5);
+  GorillaLight := TGorillaLight.Create(GorillaViewport);
+  GorillaLight.Parent := GorillaViewport;
+  GorillaViewport.UseFixedFrameRate := true;
+  // GorillaViewport.VSync := true;
+  GorillaViewport.FixedFrameRate := 2000;
+  GorillaViewport.DiagnosticsActive := true;
+  GorillaViewport.UsingDesignCamera := False;
+  GorillaCamera := TPolarCamera.Create(GorillaViewport);
+  GorillaCamera.Parent := GorillaViewport;
+  GorillaViewport.Camera := GorillaCamera;
+  GorillaModel := Nil;
+  GorillaCamera.FOV := 60;
+
+end;
+
+procedure TForm1.FormShow(Sender: TObject);
+begin
+  ModelTypeGLBMenuClick(Self);
+end;
+
+function TForm1.GetCameraUp: TPoint3D;
+begin
+  Result := FCameraUp;
+end;
+
+function TForm1.GetModelRotation: TPoint3D;
+begin
+  Result := FModelRotation;
+end;
+
+function TForm1.GetLookAt: TPoint3D;
+begin
+  Result := FLookAt;
+end;
+
+procedure TForm1.ModelTypeDAEMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/dae/Orientation.dae');
+end;
+
+procedure TForm1.ModelTypeFBXMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/fbx/Orientation.fbx');
+end;
+
+procedure TForm1.ModelTypeGLBMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/glb/Orientation.glb');
+end;
+
+procedure TForm1.ModelTypeGLTFMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/gltf/Orientation.gltf');
+end;
+
+procedure TForm1.ModelTypeOBJMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/obj/Orientation.obj');
+end;
+
+procedure TForm1.ModelTypePLYMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/ply/Orientation.ply');
+end;
+
+procedure TForm1.ModelTypeSTLMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/stl/Orientation.stl');
+end;
+
+procedure TForm1.ModelTypeUSDMenuClick(Sender: TObject);
+begin
+  SwitchModel(ModelDir + 'models/Orientation/usd/Orientation.usdc');
+end;
+
+procedure TForm1.SetCameraUp(const V: TPoint3D);
+begin
+//  if Point3DDiffers(FCameraUp, V) then
+    begin
+      FCameraUp := V;
+      DoCameraUp;
+    end;
+end;
+
+procedure TForm1.SetModelRotation(const V: TPoint3D);
+begin
+//  if Point3DDiffers(FModelRotation, V) then
+    begin
+      FModelRotation := V;
+      DoModelRotation;
+    end;
+end;
+
+procedure TForm1.SetLookAt(const V: TPoint3D);
+begin
+//  if Point3DDiffers(FLookAt, V) then
+    begin
+      FLookAt := V;
+      DoLookAt;
+    end;
+end;
+
+procedure TForm1.SwitchModel(const AModel: String);
+var
+  BBox: TBoundingBox;
+begin
+  if (AModel = String.Empty) or (not FileExists(AModel)) then
+    begin
+      ShowMessage('Model Not Found ' + AModel);
+      Exit;
+    end;
+
+//  if GorillaModel <> Nil then
+//    FreeAndNil(GorillaModel);
+
+  if GorillaModel = Nil then
+    begin
+      GorillaModel := TGorillaModel.Create(GorillaViewport);
+      GorillaModel.Parent := GorillaViewport;
+    end;
+
+  GorillaModel.Clear;
+
+  try
+    GorillaModel.LoadFromFile(nil, AModel, []);
+    BBox := GorillaModel.GetBoundingBox();
+
+    GorillaModel.Position.Point := Point3D(BBox.TopLeftNear.X + (BBox.Width / 2),
+                                            BBox.TopLeftNear.Y + (BBox.Height / 2),
+                                            BBox.TopLeftNear.Z + (BBox.Depth / 2));
+{ Test Values
+    CameraUp := Point3D(0, 1, 0);
+    ModelRotation := Point3D(90, 0, 0);
+    LookAt := Point3D(50, 0, 0);
+}
+    DoCameraUp;
+    DoLookAt;
+    DoModelRotation;
+
+    Caption := 'Orientation : ' + AModel;
+  except
+    on E : Exception do
+      begin
+        ShowMessage('Can''t Load Model : ' + AModel + sLineBreak +
+                    'Exception class name : '+ E.ClassName   + sLineBreak +
+                    'Exception message : ' + E.Message);
+        FreeAndNil(GorillaModel);
+      end;
+  end;
+end;
+
+
+end.

@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{10D26CF4-8043-48A0-8EE6-3EE3D79BE733}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="BasicsTest\BasicsTest.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="FrameTest\FrameTest.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Orientation\Orientation.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="BasicsTest">
+        <MSBuild Projects="BasicsTest\BasicsTest.dproj"/>
+    </Target>
+    <Target Name="BasicsTest:Clean">
+        <MSBuild Projects="BasicsTest\BasicsTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="BasicsTest:Make">
+        <MSBuild Projects="BasicsTest\BasicsTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FrameTest">
+        <MSBuild Projects="FrameTest\FrameTest.dproj"/>
+    </Target>
+    <Target Name="FrameTest:Clean">
+        <MSBuild Projects="FrameTest\FrameTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FrameTest:Make">
+        <MSBuild Projects="FrameTest\FrameTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Orientation">
+        <MSBuild Projects="Orientation\Orientation.dproj"/>
+    </Target>
+    <Target Name="Orientation:Clean">
+        <MSBuild Projects="Orientation\Orientation.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Orientation:Make">
+        <MSBuild Projects="Orientation\Orientation.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="BasicsTest;FrameTest;Orientation"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="BasicsTest:Clean;FrameTest:Clean;Orientation:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="BasicsTest:Make;FrameTest:Make;Orientation:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
