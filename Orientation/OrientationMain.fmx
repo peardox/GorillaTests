@@ -75,10 +75,10 @@ object Form1: TForm1
           Text = 'STL'
           OnClick = ModelTypeSTLMenuClick
         end
-        object ModelTypeUSDMenu: TMenuItem
+        object ModelTypeUSDCMenu: TMenuItem
           Locked = True
           Text = 'USD'
-          OnClick = ModelTypeUSDMenuClick
+          OnClick = ModelTypeUSDCMenuClick
         end
       end
       object DisplayMenu: TMenuItem

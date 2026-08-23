@@ -27,7 +27,7 @@ type
     ModelTypeOBJMenu: TMenuItem;
     ModelTypePLYMenu: TMenuItem;
     ModelTypeSTLMenu: TMenuItem;
-    ModelTypeUSDMenu: TMenuItem;
+    ModelTypeUSDCMenu: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ModelTypeDAEMenuClick(Sender: TObject);
@@ -37,7 +37,7 @@ type
     procedure ModelTypeOBJMenuClick(Sender: TObject);
     procedure ModelTypePLYMenuClick(Sender: TObject);
     procedure ModelTypeSTLMenuClick(Sender: TObject);
-    procedure ModelTypeUSDMenuClick(Sender: TObject);
+    procedure ModelTypeUSDCMenuClick(Sender: TObject);
   private
     { Private declarations }
     FGroupBoxes: array of TGroupBox;
@@ -75,6 +75,11 @@ type
 
 var
   Form1: TForm1;
+
+const
+  // The type of model to load on startup
+  // Valid options are dae, fbx, glb, gltf, obj, ply, stl and usdc
+  DefaultLoadType: String = 'usdc';
 
 implementation
 
@@ -350,7 +355,7 @@ end;
 
 procedure TForm1.FormShow(Sender: TObject);
 begin
-  ModelTypeGLBMenuClick(Self);
+  SwitchModel(ModelDir + 'models/Orientation/' + DefaultLoadType + '/Orientation.' + DefaultLoadType);
 end;
 
 function TForm1.GetCameraUp: TPoint3D;
@@ -403,14 +408,14 @@ begin
   SwitchModel(ModelDir + 'models/Orientation/stl/Orientation.stl');
 end;
 
-procedure TForm1.ModelTypeUSDMenuClick(Sender: TObject);
+procedure TForm1.ModelTypeUSDCMenuClick(Sender: TObject);
 begin
-  SwitchModel(ModelDir + 'models/Orientation/usd/Orientation.usdc');
+  SwitchModel(ModelDir + 'models/Orientation/usdc/Orientation.usdc');
 end;
 
 procedure TForm1.SetCameraUp(const V: TPoint3D);
 begin
-//  if Point3DDiffers(FCameraUp, V) then
+  if Point3DDiffers(FCameraUp, V) then
     begin
       FCameraUp := V;
       DoCameraUp;
@@ -419,7 +424,7 @@ end;
 
 procedure TForm1.SetModelRotation(const V: TPoint3D);
 begin
-//  if Point3DDiffers(FModelRotation, V) then
+  if Point3DDiffers(FModelRotation, V) then
     begin
       FModelRotation := V;
       DoModelRotation;
@@ -428,7 +433,7 @@ end;
 
 procedure TForm1.SetLookAt(const V: TPoint3D);
 begin
-//  if Point3DDiffers(FLookAt, V) then
+  if Point3DDiffers(FLookAt, V) then
     begin
       FLookAt := V;
       DoLookAt;
