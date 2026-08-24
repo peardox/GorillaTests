@@ -1,0 +1,16 @@
+﻿  <TemplateLibrary Version="1.0" id="com.peardox.template.gorilla3d">
+    <Name>DelphiFMXGorilla3DProject</Name>
+    <Description>Gorilla3D Projects</Description>
+    <Items>
+      <Item id="com.peardox.template.gorilla3d.blank" Creator="DelphiProjectRepositoryCreator">
+        <Name>Blank Gorilla3D Project</Name>
+        <Description>A Gorilla3D Based FMX Project</Description>
+        <Author>peardox</Author>
+        <Icon>Icons\gorilla3d.ico</Icon>
+        <ProjectFile>TemplateBlank.dproj</ProjectFile>
+        <DefaultProjectName>Blank</DefaultProjectName>
+        <FilePath>Blank</FilePath>
+        <Identities>RadStudio</Identities>
+      </Item>
+    </Items>
+  </TemplateLibrary>

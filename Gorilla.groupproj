@@ -12,6 +12,9 @@
         <Projects Include="Orientation\Orientation.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="Templates\Blank\TemplateBlank.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -47,14 +50,23 @@
     <Target Name="Orientation:Make">
         <MSBuild Projects="Orientation\Orientation.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TemplateBlank">
+        <MSBuild Projects="Templates\Blank\TemplateBlank.dproj"/>
+    </Target>
+    <Target Name="TemplateBlank:Clean">
+        <MSBuild Projects="Templates\Blank\TemplateBlank.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TemplateBlank:Make">
+        <MSBuild Projects="Templates\Blank\TemplateBlank.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="BasicsTest;FrameTest;Orientation"/>
+        <CallTarget Targets="BasicsTest;FrameTest;Orientation;TemplateBlank"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="BasicsTest:Clean;FrameTest:Clean;Orientation:Clean"/>
+        <CallTarget Targets="BasicsTest:Clean;FrameTest:Clean;Orientation:Clean;TemplateBlank:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="BasicsTest:Make;FrameTest:Make;Orientation:Make"/>
+        <CallTarget Targets="BasicsTest:Make;FrameTest:Make;Orientation:Make;TemplateBlank:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

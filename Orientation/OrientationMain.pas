@@ -360,6 +360,7 @@ begin
   GorillaViewport := TPolarViewport.Create(Layout5);
   GorillaLight := TGorillaLight.Create(GorillaViewport);
   GorillaLight.Parent := GorillaViewport;
+  GorillaLight.LightType := TLightType.Point;
   GorillaViewport.UseFixedFrameRate := true;
   // GorillaViewport.VSync := true;
   GorillaViewport.FixedFrameRate := 2000;
