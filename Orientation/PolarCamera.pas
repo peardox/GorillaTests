@@ -69,7 +69,7 @@ begin
   Position.Point := LookFrom;
   LForward := (LookAt - LookFrom).Normalize;
   LRight   := FWorldUp.CrossProduct(LForward).Normalize;
-  LUp      := FWorldUp; // LForward.CrossProduct(LRight).Normalize;
+  LUp      := {FWorldUp; // }LForward.CrossProduct(LRight).Normalize;
   RotationAngle.Y := RadToDeg(ArcTan2(LForward.X, LForward.Z));
   RotationAngle.X := RadToDeg(ArcSin(-LForward.Y));
   RotationAngle.Z := RadToDeg(ArcTan2(-LRight.Y, LUp.Y));

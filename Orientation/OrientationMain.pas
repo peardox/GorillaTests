@@ -13,9 +13,6 @@ uses
 type
 
   TForm1 = class(TForm)
-    Layout2: TLayout;
-    Layout5: TLayout;
-    Layout6: TLayout;
     MainMenu1: TMainMenu;
     OptionsMenu: TMenuItem;
     ModelTypeMenu: TMenuItem;
@@ -28,6 +25,20 @@ type
     ModelTypePLYMenu: TMenuItem;
     ModelTypeSTLMenu: TMenuItem;
     ModelTypeUSDCMenu: TMenuItem;
+    Layout1: TLayout;
+    Layout2: TLayout;
+    ViewportLayout: TLayout;
+    RadioGroupLayout: TLayout;
+    DialsLayout: TLayout;
+    AzimuthDial: TArcDial;
+    InclinationBar: TTrackBar;
+    RollDial: TArcDial;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    AzimuthText: TLabel;
+    RollText: TLabel;
+    Label4: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ModelTypeDAEMenuClick(Sender: TObject);
@@ -96,6 +107,7 @@ uses Gorilla.DefTypes, System.Math,
 
 {$R *.fmx}
 
+// Compare 2 TPoint3D recs with Epsilon for Floating Poin
 function Point3DDiffers(const A, B: TPoint3D; Epsilon: Single = 1E-6): Boolean;
 begin
   Result := (Abs(A.X - B.X) > Epsilon) or
@@ -175,8 +187,8 @@ begin
   SetLength(FGroupBoxes, 5);
   SetLength(FRadioButtons, (3 * 4) + 6 + 6);
 
-  HeadLabel := TLabel.Create(Layout6);
-  HeadLabel.Parent := Layout6;
+  HeadLabel := TLabel.Create(RadioGroupLayout);
+  HeadLabel.Parent := RadioGroupLayout;
   HeadLabel.Position.X := 8;
   HeadLabel.Position.Y := 0;
   HeadLabel.Width := 160;
@@ -185,8 +197,8 @@ begin
 
   for P := 0 to 2 do
     begin
-      Panel := TPanel.Create(Layout6);
-      Panel.Parent := Layout6;
+      Panel := TPanel.Create(RadioGroupLayout);
+      Panel.Parent := RadioGroupLayout;
       Panel.Position.X := 4;
       Panel.Position.Y := 24 + (P * PanelYOffset);
       Panel.Width := 150;
@@ -220,16 +232,16 @@ begin
         FGroupBoxes[P] := GroupBox;
     end;
 
-  HeadLabel := TLabel.Create(Layout6);
-  HeadLabel.Parent := Layout6;
+  HeadLabel := TLabel.Create(RadioGroupLayout);
+  HeadLabel.Parent := RadioGroupLayout;
   HeadLabel.Position.X := 8;
   HeadLabel.Position.Y := 16 + (3*PanelYOffset);
   HeadLabel.Width := 160;
   HeadLabel.Text := 'World Up';
   HeadLabel.TextSettings.HorzAlign := TTextAlign.Center;
 
-  Panel := TPanel.Create(Layout6);
-  Panel.Parent := Layout6;
+  Panel := TPanel.Create(RadioGroupLayout);
+  Panel.Parent := RadioGroupLayout;
   Panel.Position.X := 4;
   Panel.Position.Y := 16 + 8 + 16 + (3*PanelYOffset);
   Panel.Width := 150;
@@ -258,16 +270,16 @@ begin
     end;
   FGroupBoxes[3] := GroupBox;
 
-  HeadLabel := TLabel.Create(Layout6);
-  HeadLabel.Parent := Layout6;
+  HeadLabel := TLabel.Create(RadioGroupLayout);
+  HeadLabel.Parent := RadioGroupLayout;
   HeadLabel.Position.X := 8;
   HeadLabel.Position.Y := 16 + 160 + (3*PanelYOffset);
   HeadLabel.Width := 160;
   HeadLabel.Text := 'Look At';
   HeadLabel.TextSettings.HorzAlign := TTextAlign.Center;
 
-  Panel := TPanel.Create(Layout6);
-  Panel.Parent := Layout6;
+  Panel := TPanel.Create(RadioGroupLayout);
+  Panel.Parent := RadioGroupLayout;
   Panel.Position.X := 4;
   Panel.Position.Y := 16 + 8 + 160 + 16 + (3*PanelYOffset);
   Panel.Width := 150;
@@ -357,7 +369,7 @@ begin
   if not DirectoryExists('models') then
     ModelDir := '../../../';
   ModelPath := ExpandFileName(ExtractFilePath(ParamStr(0)) + ModelDir);
-  GorillaViewport := TPolarViewport.Create(Layout5);
+  GorillaViewport := TPolarViewport.Create(ViewportLayout);
   GorillaLight := TGorillaLight.Create(GorillaViewport);
   GorillaLight.Parent := GorillaViewport;
   GorillaLight.LightType := TLightType.Point;
@@ -513,7 +525,7 @@ begin
     DoLookAt;
     DoModelRotation;
 
-    Caption := 'Orientation : ' + AModel;
+    Caption := 'Orientation : ' + AModel + ' : ' + FloatToStr(ViewportLayout.Width) + ' x ' + FloatToStr(ViewportLayout.Height);
   except
     on E : Exception do
       begin
