@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Orientation'
-  ClientHeight = 660
-  ClientWidth = 960
+  ClientHeight = 720
+  ClientWidth = 1020
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -67,36 +67,36 @@ object Form1: TForm1
   end
   object Layout1: TLayout
     Align = Client
-    Size.Width = 960.000000000000000000
-    Size.Height = 660.000000000000000000
+    Size.Width = 1020.000000000000000000
+    Size.Height = 720.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     object Layout2: TLayout
       Align = Client
-      Size.Width = 960.000000000000000000
-      Size.Height = 660.000000000000000000
+      Size.Width = 1020.000000000000000000
+      Size.Height = 720.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
       object ViewportLayout: TLayout
         Align = Client
-        Size.Width = 640.000000000000000000
-        Size.Height = 660.000000000000000000
+        Size.Width = 700.000000000000000000
+        Size.Height = 720.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
       end
       object RadioGroupLayout: TLayout
         Align = Right
-        Position.X = 640.000000000000000000
+        Position.X = 700.000000000000000000
         Size.Width = 160.000000000000000000
-        Size.Height = 660.000000000000000000
+        Size.Height = 720.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 2
       end
       object DialsLayout: TLayout
         Align = Right
-        Position.X = 800.000000000000000000
+        Position.X = 860.000000000000000000
         Size.Width = 160.000000000000000000
-        Size.Height = 660.000000000000000000
+        Size.Height = 720.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
         object AzimuthDial: TArcDial
@@ -107,6 +107,7 @@ object Form1: TForm1
           Size.Height = 144.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
+          OnChange = AzimuthDialChange
         end
         object InclinationBar: TTrackBar
           CanParentFocus = True
@@ -119,6 +120,7 @@ object Form1: TForm1
           Size.PlatformDefault = False
           TabOrder = 2
           Value = 90.000000000000000000
+          OnChange = InclinationBarChange
         end
         object RollDial: TArcDial
           Position.X = 8.000000000000000000
@@ -128,6 +130,7 @@ object Form1: TForm1
           Size.Height = 144.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 0
+          OnChange = RollDialChange
         end
         object Label1: TLabel
           Position.X = 8.000000000000000000
@@ -170,7 +173,7 @@ object Form1: TForm1
           TextSettings.Font.Size = 72.000000000000000000
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.HorzAlign = Center
-          Text = '360'
+          Text = '0'
           TabOrder = 93
         end
         object RollText: TLabel
@@ -184,10 +187,10 @@ object Form1: TForm1
           TextSettings.Font.Size = 72.000000000000000000
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.HorzAlign = Center
-          Text = '360'
+          Text = '0'
           TabOrder = 91
         end
-        object Label4: TLabel
+        object InclinationText: TLabel
           StyledSettings = [FontColor]
           Position.X = 8.000000000000000000
           Position.Y = 256.000000000000000000
@@ -198,7 +201,7 @@ object Form1: TForm1
           TextSettings.Font.Size = 48.000000000000000000
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.HorzAlign = Trailing
-          Text = '-90'
+          Text = '0'
           TabOrder = 92
         end
       end

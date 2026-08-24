@@ -38,7 +38,7 @@ type
     Label3: TLabel;
     AzimuthText: TLabel;
     RollText: TLabel;
-    Label4: TLabel;
+    InclinationText: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ModelTypeDAEMenuClick(Sender: TObject);
@@ -49,10 +49,16 @@ type
     procedure ModelTypePLYMenuClick(Sender: TObject);
     procedure ModelTypeSTLMenuClick(Sender: TObject);
     procedure ModelTypeUSDCMenuClick(Sender: TObject);
+    procedure AzimuthDialChange(Sender: TObject);
+    procedure RollDialChange(Sender: TObject);
+    procedure InclinationBarChange(Sender: TObject);
   private
     { Private declarations }
     FGroupBoxes: array of TGroupBox;
     FRadioButtons: array of TRadioButton;
+    FAzimuth: Double;
+    FInclination: Double;
+    FRoll: Double;
     GorillaViewport: TPolarViewport;
     GorillaLight: TGorillaLight;
     GorillaModel: TGorillaModel;
@@ -94,7 +100,9 @@ const
 
 implementation
 
-uses Gorilla.DefTypes, System.Math,
+uses
+  FMX.Styles,
+  Gorilla.DefTypes, System.Math,
   Gorilla.GLB.Loader,
   Gorilla.GLTF.Loader,
   Gorilla.OBJ.Loader,
@@ -137,6 +145,16 @@ begin
     10: ModelRotation := Point3D(old.X, old.Y,180);
     11: ModelRotation := Point3D(old.X, old.Y,270);
   end;
+end;
+
+// Update FAzimuth and display Text
+procedure TForm1.AzimuthDialChange(Sender: TObject);
+begin
+  FAzimuth := -AzimuthDial.Value;
+  if FAzimuth < 0 then
+      FAzimuth := FAzimuth + 360;
+
+  AzimuthText.Text := Format('%3.0f',[FAzimuth]);
 end;
 
 // Triggered by a RadioButton in the CameraUp group
@@ -365,9 +383,10 @@ end;
 // Initialise a load of stuff
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  CreateUIBoxes;
   if not DirectoryExists('models') then
     ModelDir := '../../../';
+
+  CreateUIBoxes;
   ModelPath := ExpandFileName(ExtractFilePath(ParamStr(0)) + ModelDir);
   GorillaViewport := TPolarViewport.Create(ViewportLayout);
   GorillaLight := TGorillaLight.Create(GorillaViewport);
@@ -404,6 +423,14 @@ end;
 function TForm1.GetModelRotation: TPoint3D;
 begin
   Result := FModelRotation;
+end;
+
+// Update FInclanation and display Text
+procedure TForm1.InclinationBarChange(Sender: TObject);
+begin
+  FInclination := -(InclinationBar.Value - 90);
+
+  InclinationText.Text := Format('%2.0f',[FInclination]);
 end;
 
 // Getter for LookAt
@@ -452,6 +479,16 @@ end;
 procedure TForm1.ModelTypeUSDCMenuClick(Sender: TObject);
 begin
   SwitchModel(ModelDir + 'models/Orientation/usdc/Orientation.usdc');
+end;
+
+// Update FRoll and display Text
+procedure TForm1.RollDialChange(Sender: TObject);
+begin
+  FRoll := -RollDial.Value;
+  if FRoll < 0 then
+      FRoll := FRoll + 360;
+
+  RollText.Text := Format('%3.0f',[FRoll]);
 end;
 
 // Setter for CameraUp also actions it
