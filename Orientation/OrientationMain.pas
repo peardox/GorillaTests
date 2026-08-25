@@ -580,6 +580,12 @@ begin
 
       DebugMemo.Lines.Add(Format('Device: %s', [Display.DeviceName]));
       DebugMemo.Lines.Add(Format('  FriendlyName: %s', [Display.FriendlyName]));
+      if Display.WidthMm > 0 then
+        DebugMemo.Lines.Add(Format('  Size: %d x %d mm  (%.1f")',
+          [Display.WidthMm, Display.HeightMm, Display.DiagonalInches]))
+      else
+        DebugMemo.Lines.Add('  Size: unknown');
+
       DebugMemo.Lines.Add(Format('  Primary: %s', [BoolToStr(Display.IsPrimary, True)]));
       DebugMemo.Lines.Add(Format('  Bounds: (%d, %d) - (%d, %d)',
         [Display.MonitorRect.Left, Display.MonitorRect.Top,
