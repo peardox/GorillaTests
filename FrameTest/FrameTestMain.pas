@@ -79,9 +79,7 @@ end;
 
 procedure TForm1.FormShow(Sender: TObject);
 begin
-{$if defined(TESTING)}
-  LoadClick(NIL);
-{$ifend}
+  SwitchModel('C:\src\GorillaTest\models\Sticks\XBoxController\Joystick_Animated.glb');
 end;
 
 procedure TForm1.Layout5Resize(Sender: TObject);
@@ -95,17 +93,12 @@ end;
 
 procedure TForm1.LoadClick(Sender: TObject);
 begin
-{$if defined(TESTING)}
-    SwitchModel('C:\src\GorillaTest\models\Sticks\XBoxController\Joystick_Animated.glb');
-//    SwitchModel('C:\src\GorillaTest\models\uvcube\glTF-Binary\uvcube.glb');
-{$else}
   if OpenDialog1.Execute then
     begin
       SwitchModel(OpenDialog1.Filename);
     end
   else
     SwitchModel;
-{$ifend}
 end;
 
 function MaxDim(x, y, z: Single): Single;
