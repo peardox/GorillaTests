@@ -6,7 +6,8 @@ uses
   FMX.Skia,
   OrientationMain in 'OrientationMain.pas' {Form1},
   PolarCamera in 'PolarCamera.pas',
-  PolarViewport in 'PolarViewport.pas';
+  PolarViewport in 'PolarViewport.pas',
+  DisplayData in 'DisplayData.pas';
 
 // ====== Start of Added for GPU ======
 {

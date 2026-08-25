@@ -8,7 +8,8 @@ uses
   System.Math.Vectors, Gorilla.Control, Gorilla.Transform, Gorilla.Mesh,
   Gorilla.Model, FMX.Controls3D, Gorilla.Light, PolarViewport, FMX.Layouts,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.Objects3D,
-  FMX.TabControl, PolarCamera, FMX.Menus;
+  FMX.TabControl, PolarCamera, FMX.Menus, FMX.Memo.Types, FMX.ScrollBox,
+  FMX.Memo;
 
 type
 
@@ -25,20 +26,24 @@ type
     ModelTypePLYMenu: TMenuItem;
     ModelTypeSTLMenu: TMenuItem;
     ModelTypeUSDCMenu: TMenuItem;
-    Layout1: TLayout;
-    Layout2: TLayout;
+    TabControl1: TTabControl;
+    GorillaTab: TTabItem;
+    GorillaLayout: TLayout;
     ViewportLayout: TLayout;
     RadioGroupLayout: TLayout;
     DialsLayout: TLayout;
     AzimuthDial: TArcDial;
     InclinationBar: TTrackBar;
     RollDial: TArcDial;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
+    AzimuthLabel: TLabel;
+    InclinationLabel: TLabel;
+    RollLabel: TLabel;
     AzimuthText: TLabel;
     RollText: TLabel;
     InclinationText: TLabel;
+    DebugTab: TTabItem;
+    DebugLayout: TLayout;
+    DebugMemo: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ModelTypeDAEMenuClick(Sender: TObject);
@@ -52,6 +57,7 @@ type
     procedure AzimuthDialChange(Sender: TObject);
     procedure RollDialChange(Sender: TObject);
     procedure InclinationBarChange(Sender: TObject);
+    procedure DisplayMenuClick(Sender: TObject);
   private
     { Private declarations }
     FGroupBoxes: array of TGroupBox;
@@ -83,6 +89,7 @@ type
     procedure DoCameraUp;
     procedure DoLookAt;
     procedure DoModelRotation;
+    procedure DumpDisplayInfo;
   public
     { Public declarations }
     property LookAt: TPoint3D read GetLookAt write SetLookAt;
@@ -101,7 +108,7 @@ const
 implementation
 
 uses
-  FMX.Styles,
+  DisplayData,
   Gorilla.DefTypes, System.Math,
   Gorilla.GLB.Loader,
   Gorilla.GLTF.Loader,
@@ -329,6 +336,12 @@ begin
 
 end;
 
+// Call DumpDisplayInfo to show Display Information on Debug Tab
+procedure TForm1.DisplayMenuClick(Sender: TObject);
+begin
+    DumpDisplayInfo;
+end;
+
 // Action a CameraUp property change
 procedure TForm1.DoCameraUp;
 begin
@@ -378,31 +391,6 @@ begin
       else if((which >= 18) and (which <= 23)) then
         ChangeLookAt(which);
     end;
-end;
-
-// Initialise a load of stuff
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  if not DirectoryExists('models') then
-    ModelDir := '../../../';
-
-  CreateUIBoxes;
-  ModelPath := ExpandFileName(ExtractFilePath(ParamStr(0)) + ModelDir);
-  GorillaViewport := TPolarViewport.Create(ViewportLayout);
-  GorillaLight := TGorillaLight.Create(GorillaViewport);
-  GorillaLight.Parent := GorillaViewport;
-  GorillaLight.LightType := TLightType.Point;
-  GorillaViewport.UseFixedFrameRate := true;
-  // GorillaViewport.VSync := true;
-  GorillaViewport.FixedFrameRate := 2000;
-  GorillaViewport.DiagnosticsActive := true;
-  GorillaViewport.UsingDesignCamera := False;
-  GorillaCamera := TPolarCamera.Create(GorillaViewport);
-  GorillaCamera.Parent := GorillaViewport;
-  GorillaViewport.Camera := GorillaCamera;
-  GorillaModel := Nil;
-  GorillaCamera.FOV := 60;
-
 end;
 
 // On startup load a default Model as specified by DefaultLoadType
@@ -572,6 +560,64 @@ begin
         FreeAndNil(GorillaModel);
       end;
   end;
+end;
+
+// Show Display Information on Debug Tab
+procedure TForm1.DumpDisplayInfo;
+var
+  Displays: TPeardoxDisplays;
+  Display: TDisplayInfo;
+  Mode: TDisplayMode;
+  I: Integer;
+begin
+  DebugMemo.Lines.Clear;
+
+  Displays := TPeardoxDisplays.Create;
+  try
+    for I := 0 to Displays.Count - 1 do
+    begin
+      Display := Displays[I];
+
+      DebugMemo.Lines.Add(Format('Device: %s', [Display.DeviceName]));
+      DebugMemo.Lines.Add(Format('  FriendlyName: %s', [Display.FriendlyName]));
+      DebugMemo.Lines.Add(Format('  Primary: %s', [BoolToStr(Display.IsPrimary, True)]));
+
+      DebugMemo.Lines.Add('  Current: ' + Display.CurrentMode.ToString);
+      DebugMemo.Lines.Add('  Available modes:');
+      for Mode in Display.AvailableModes do
+        DebugMemo.Lines.Add('    ' + Mode.ToString);
+      DebugMemo.Lines.Add('');
+    end;
+  finally
+    Displays.Free; // frees the list
+  end;
+end;
+
+// Initialise a load of stuff
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  TabControl1.ActiveTab := GorillaTab;
+
+  if not DirectoryExists('models') then
+    ModelDir := '../../../';
+
+  CreateUIBoxes;
+  ModelPath := ExpandFileName(ExtractFilePath(ParamStr(0)) + ModelDir);
+  GorillaViewport := TPolarViewport.Create(ViewportLayout);
+  GorillaLight := TGorillaLight.Create(GorillaViewport);
+  GorillaLight.Parent := GorillaViewport;
+  GorillaLight.LightType := TLightType.Point;
+  GorillaViewport.UseFixedFrameRate := true;
+  // GorillaViewport.VSync := true;
+  GorillaViewport.FixedFrameRate := 2000;
+  GorillaViewport.DiagnosticsActive := true;
+  GorillaViewport.UsingDesignCamera := False;
+  GorillaCamera := TPolarCamera.Create(GorillaViewport);
+  GorillaCamera.Parent := GorillaViewport;
+  GorillaViewport.Camera := GorillaCamera;
+  GorillaModel := Nil;
+  GorillaCamera.FOV := 60;
+
 end;
 
 

@@ -4,7 +4,7 @@
         <ProjectVersion>20.4</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">Orientation</ProjectName>
         <TargetedPlatforms>2790547</TargetedPlatforms>
@@ -347,6 +347,8 @@
         </DCCReference>
         <DCCReference Include="PolarCamera.pas"/>
         <DCCReference Include="PolarViewport.pas"/>
+        <DCCReference Include="DisplayData.pas"/>
+        <None Include="README.md"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -367,6 +369,8 @@
                 <Source>
                     <Source Name="MainSource">Orientation.dpr</Source>
                 </Source>
+                <WelcomePageFile Path="README.md"/>
+                <WelcomePageFolder/>
             </Delphi.Personality>
             <Deployment Version="5">
                 <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule">
@@ -513,6 +517,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Win32\Debug\Orientation.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>Orientation.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win32\Release\Orientation.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>Orientation.exe</RemoteName>
                         <Overwrite>true</Overwrite>
