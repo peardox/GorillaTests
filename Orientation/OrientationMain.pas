@@ -581,8 +581,13 @@ begin
       DebugMemo.Lines.Add(Format('Device: %s', [Display.DeviceName]));
       DebugMemo.Lines.Add(Format('  FriendlyName: %s', [Display.FriendlyName]));
       DebugMemo.Lines.Add(Format('  Primary: %s', [BoolToStr(Display.IsPrimary, True)]));
-
-      DebugMemo.Lines.Add('  Current: ' + Display.CurrentMode.ToString);
+      DebugMemo.Lines.Add(Format('  Bounds: (%d, %d) - (%d, %d)',
+        [Display.MonitorRect.Left, Display.MonitorRect.Top,
+         Display.MonitorRect.Right, Display.MonitorRect.Bottom]));
+      DebugMemo.Lines.Add(Format('  Work Area: (%d, %d) - (%d, %d)',
+        [Display.WorkRect.Left, Display.WorkRect.Top,
+         Display.WorkRect.Right, Display.WorkRect.Bottom]));
+       DebugMemo.Lines.Add('  Current: ' + Display.CurrentMode.ToString);
       DebugMemo.Lines.Add('  Available modes:');
       for Mode in Display.AvailableModes do
         DebugMemo.Lines.Add('    ' + Mode.ToString);
