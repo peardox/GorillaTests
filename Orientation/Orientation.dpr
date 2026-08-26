@@ -6,8 +6,10 @@ uses
   OrientationMain in 'OrientationMain.pas' {Form1},
   PolarCamera in 'PolarCamera.pas',
   PolarViewport in 'PolarViewport.pas',
-  DisplayData in 'DisplayData.pas',
-  GpuPreference in 'GpuPreference.pas';
+{$if defined(MSWINDOWS)}
+  GpuPreference in 'GpuPreference.pas',
+{$ifend}
+  DisplayData in 'DisplayData.pas';
 
 {$define HIPERF}
 // {$define POWERSAVE}

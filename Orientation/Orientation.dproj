@@ -346,8 +346,10 @@
         </DCCReference>
         <DCCReference Include="PolarCamera.pas"/>
         <DCCReference Include="PolarViewport.pas"/>
+        <DCCReference Include="GpuPreference.pas">
+            <Form>$ifend</Form>
+        </DCCReference>
         <DCCReference Include="DisplayData.pas"/>
-        <DCCReference Include="GpuPreference.pas"/>
         <None Include="README.md"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
