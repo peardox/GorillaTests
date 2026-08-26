@@ -1,4 +1,4 @@
 # Project README
 # Fill Me In
 
-## Click the Code Tab at the bottom Right to edit me
+## Click the Code Tab at the Bottom Right to edit me
